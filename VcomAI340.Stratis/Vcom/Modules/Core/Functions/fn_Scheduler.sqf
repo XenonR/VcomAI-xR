@@ -1,4 +1,3 @@
-private _T1 = diag_ticktime + 1;
 private _T2 = diag_ticktime + 10;
 
 waituntil

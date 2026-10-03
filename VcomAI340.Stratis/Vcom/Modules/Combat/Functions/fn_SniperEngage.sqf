@@ -36,41 +36,18 @@ if ((count _NearestEnemys) > 0) then
 			_x lookat (getposATL _NearestEnemy); 
 			_x doTarget _NearestEnemy; 
 			
-			//Based off distance - change skill
-			private _Dist = _x distance2D _NearestEnemy;
-			if (_Dist > 50) then
-			{
-				private _SkillSet = linearConversion[1000, 2000,_Dist,1, 0.5, true];
-				_x setSkill ["aimingShake",_SkillSet];
-				_x setSkill ["aimingSpeed",_SkillSet];
-				_x setSkill ["aimingAccuracy",_SkillSet];
-			}
-			else
-			{
-				_x setSkill 0.9;		
-				{
-					_Unit setSkill _x;
-				} forEach VCM_AIDIFA;
-				
-				
-				if (VCM_CLASSNAMESPECIFIC && {count VCM_SKILL_CLASSNAMES > 0}) then
-				{
-					{
-						if (typeOf _x isEqualTo (_x select 0)) exitWith
-						{
-							_ClassnameSet = true;
-							_x setSkill ["aimingAccuracy",((_x select 1) select 0)];_x setSkill ["aimingShake",((_x select 1) select 1)];_x setSkill ["spotDistance",((_x select 1) select 2)];_x setSkill ["spotTime",((_x select 1) select 3)];_x setSkill ["courage",((_x select 1) select 4)];_x setSkill ["commanding",((_x select 1) select 5)];	_x setSkill ["aimingSpeed",((_x select 1) select 6)];_x setSkill ["general",((_x select 1) select 7)];_x setSkill ["endurance",((_x select 1) select 8)];_x setSkill ["reloadSpeed",((_x select 1) select 9)];
-						};
-					} foreach VCM_SKILL_CLASSNAMES;
-				};			
-				
-				if (VCM_SIDESPECIFICSKILL) then
-				{
-					_x call VCM_AISIDESPEC;
-				};
-				
-			};
-			
+            // Keep the legacy distance scaling while honoring skill opt-outs.
+            private _Dist = _Unit distance2D _NearestEnemy;
+            if (VCM_SKILLCHANGE && {!(_Group getVariable ["VCM_Skilldisable", false])}) then {
+                if (_Dist > 50) then {
+                    private _SkillSet = linearConversion [1000, 2000, _Dist, 1, 0.5, true];
+                    _Unit setSkill ["aimingShake", _SkillSet];
+                    _Unit setSkill ["aimingSpeed", _SkillSet];
+                    _Unit setSkill ["aimingAccuracy", _SkillSet];
+                } else {
+                    [_Unit] call VCM_fnc_ApplyUnitSkills;
+                };
+            };
 			sleep (2 + RANDOM 4);
 			if !(alive _x) then
 			{

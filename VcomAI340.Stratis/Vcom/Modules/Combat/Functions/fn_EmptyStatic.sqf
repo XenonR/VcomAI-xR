@@ -1,29 +1,9 @@
-
 /*
-	Author: Genesis
-
-	Description:
-		Check if there are statics nearby
-
-	Parameter(s):
-		0: GROUP - Group to search from
-		1 (Optional): NUMBER - Search distance
-
-	Returns:
-		BOOLEAN
+    Parameters: [group (GROUP), optional search distance (NUMBER, default 100)].
+    Returns: BOOL. Call on the group owner; queries do not reserve a weapon.
 */
-
-params ["_grp","_searchDist"];
-if (isNil "_searchDist") then {_searchDist = 100};
-private _returned = false;
-{
-	private _weap = nearestObject [(getpos _x),"StaticWeapon"];
-	if (!(isNull _weap) || {!((_weap distance2D _x) > _searchDist)}) exitWith
-	{
-		_returned = true;
-		_returned
-	}	
-	
-} foreach (units _grp);
-
-_returned
+params ["_group", ["_searchDist", 100]];
+((units _group) findIf {
+    private _weapons = nearestObjects [_x, ["StaticWeapon"], _searchDist];
+    (_weapons findIf {alive _x && {isNull (gunner _x)} && {isNull (assignedGunner _x)}}) >= 0
+}) >= 0

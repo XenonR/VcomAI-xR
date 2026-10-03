@@ -1,13 +1,22 @@
 //_Group spawn VCM_fnc_UseEM;
 params ["_Group"];
+if (_Group getVariable ["VCM_EMRunning", false]) exitWith {};
+_Group setVariable ["VCM_EMRunning", true];
+private _canRun = {
+    local _Group && {Vcm_ActivateAI} && {Vcm_AI_EM} && {VCOM_EM_ENABLED} &&
+    {!(_Group getVariable ["Vcm_Disable", false])} && {side _Group in VCM_SIDEENABLED} &&
+    {!isPlayer (leader _Group)} && {(leader _Group) isKindOf "Man"} &&
+    {((units _Group) findIf {alive _x}) >= 0}
+};
 
 waitUntil 
 {
+    if !(call _canRun) exitWith {true};
 	if ((random 100 <= Vcm_AI_EM_CHN)) then
 	{
 		{
 			private _Unit = _x;
-			if (isNull objectParent _Unit) then
+			if (call _canRun && {group _Unit isEqualTo _Group} && {alive _Unit} && {local _Unit} && {!isPlayer _Unit} && {isNull objectParent _Unit}) then
 			{
 				private _MP = _Unit getVariable ["VCM_MVWP",[]];
 				if (count _MP > 0 && {!(_Unit getVariable ["VCM_VAULT",false])}) then
@@ -96,24 +105,42 @@ waitUntil
 										_abcd setposasl _IPos;
 										_abcd spawn {sleep 15;deleteVehicle _this;};
 									};
+									_Unit setVariable ["VCM_EMOwner", _Group];
 									_Unit setVariable ["VCM_VAULT",true];
 									_Unit domove _IPos;
 									_Unit setVariable ["VCM_TO",diag_tickTime];
 									
 									waitUntil
 									{
-										_Unit distance2D _IPos < 3 || {!(alive _Unit)} || {(diag_tickTime - (_Unit getVariable "VCM_TO")) > 15}
+										_Unit distance2D _IPos < 3 || {!(alive _Unit)} || {(diag_tickTime - (_Unit getVariable "VCM_TO")) > 15} || {!(call _canRun)} || {!local _Unit} || {!((group _Unit) isEqualTo _Group)}
 									};
 									
-									If ((diag_tickTime - (_Unit getVariable "VCM_TO")) > 15 || !(alive _Unit)) exitwith {};
+									If ((diag_tickTime - (_Unit getVariable "VCM_TO")) > 15 || !(alive _Unit) || {!(call _canRun)} || {!local _Unit} || {!((group _Unit) isEqualTo _Group)}) exitWith {
+                                        if ((_Unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _Group) then {
+                                            if (local _Unit && {_Unit getVariable ["VCM_EMMoving", false]}) then {
+                                                _Unit enableAI "MOVE";
+                                                _Unit setVariable ["VCM_EMMoving", false, true];
+                                            };
+                                            _Unit setVariable ["VCM_VAULT", false];
+                                        };
+                                    };
 									
 									waitUntil
 									{
-										[_Unit,_IObj, 0] call BIS_fnc_isInFrontOf || {!(alive _Unit)} || {(diag_tickTime - (_Unit getVariable "VCM_TO")) > 15}
+										[_Unit,_IObj, 0] call BIS_fnc_isInFrontOf || {!(alive _Unit)} || {(diag_tickTime - (_Unit getVariable "VCM_TO")) > 15} || {!(call _canRun)} || {!local _Unit} || {!((group _Unit) isEqualTo _Group)}
 									};
 									
-									If ((diag_tickTime - (_Unit getVariable "VCM_TO")) > 15 || !(alive _Unit)) exitwith {};
+									If ((diag_tickTime - (_Unit getVariable "VCM_TO")) > 15 || !(alive _Unit) || {!(call _canRun)} || {!local _Unit} || {!((group _Unit) isEqualTo _Group)}) exitWith {
+                                        if ((_Unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _Group) then {
+                                            if (local _Unit && {_Unit getVariable ["VCM_EMMoving", false]}) then {
+                                                _Unit enableAI "MOVE";
+                                                _Unit setVariable ["VCM_EMMoving", false, true];
+                                            };
+                                            _Unit setVariable ["VCM_VAULT", false];
+                                        };
+                                    };
 									
+									_Unit setVariable ["VCM_EMMoving", true, true];
 									_Unit disableAI "MOVE";
 									_Unit setDir (_Unit getdir _IPos);
 									waitUntil
@@ -123,30 +150,50 @@ waitUntil
 											_Unit playMovenow "AmovPercMwlkSrasWrflDf";
 										};
 										sleep 0.1;
-										_Unit distance2D _IPos < 1.2 || {!(alive _Unit)} || {(diag_tickTime - (_Unit getVariable "VCM_TO")) > 15}
+										_Unit distance2D _IPos < 1.2 || {!(alive _Unit)} || {(diag_tickTime - (_Unit getVariable "VCM_TO")) > 15} || {!(call _canRun)} || {!local _Unit} || {!((group _Unit) isEqualTo _Group)}
 									};
 									
-									If ((diag_tickTime - (_Unit getVariable "VCM_TO")) > 15 || !(alive _Unit)) exitwith {};
+									If ((diag_tickTime - (_Unit getVariable "VCM_TO")) > 15 || !(alive _Unit) || {!(call _canRun)} || {!local _Unit} || {!((group _Unit) isEqualTo _Group)}) exitWith {
+                                        if ((_Unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _Group) then {
+                                            if (local _Unit && {_Unit getVariable ["VCM_EMMoving", false]}) then {
+                                                _Unit enableAI "MOVE";
+                                                _Unit setVariable ["VCM_EMMoving", false, true];
+                                            };
+                                            _Unit setVariable ["VCM_VAULT", false];
+                                        };
+                                    };
 			
 									[_Unit,true] spawn VCM_fnc_BabeOver;
-									_Unit spawn
-									{
-										sleep 3;
-										waitUntil
-										{
-											If !(animationState _this isEqualTo "AmovPercMwlkSrasWrflDf") then
-											{
-												_this playMoveNow "AmovPercMwlkSrasWrflDf";
-											};
-											((getposATL _this)#2) < 0.1
-										};
-										_this domove (getpos _this);
-										_this doFollow leader (group _this);
-										sleep 1;
-										_this enableAI "MOVE";
-										sleep VCM_AI_EM_CLDWN;
-										_This setVariable ["VCM_VAULT",false];
-									};
+                                    [_Unit, _Group] spawn {
+                                        params ["_unit", "_group"];
+                                        sleep 3;
+                                        private _deadline = diag_tickTime + 15;
+                                        waitUntil {
+                                            sleep 0.1;
+                                            if (local _unit && {alive _unit} && {(_unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _group}) then {
+                                                if !(animationState _unit isEqualTo "AmovPercMwlkSrasWrflDf") then {
+                                                    _unit playMoveNow "AmovPercMwlkSrasWrflDf";
+                                                };
+                                            };
+                                            ((getPosATL _unit)#2) < 0.1 || {!alive _unit} || {!local _unit} ||
+                                            {!(group _unit isEqualTo _group)} || {!(local _group)} || {!Vcm_ActivateAI} ||
+                                            {_group getVariable ["Vcm_Disable", false]} || {!Vcm_AI_EM} ||
+                                            {diag_tickTime > _deadline} || {!((_unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _group)}
+                                        };
+                                        if (!local _unit || {!((_unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _group)}) exitWith {};
+                                        if (alive _unit && {group _unit isEqualTo _group} && {Vcm_ActivateAI} && {Vcm_AI_EM} &&
+                                            {!(_group getVariable ["Vcm_Disable", false])}) then {
+                                            _unit doMove (getPos _unit);
+                                            _unit doFollow leader (group _unit);
+                                        };
+                                        sleep 1;
+                                        if (local _unit && {(_unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _group}) then {
+                                            _unit enableAI "MOVE";
+                                            _unit setVariable ["VCM_EMMoving", false, true];
+                                        };
+                                        sleep VCM_AI_EM_CLDWN;
+                                        if ((_unit getVariable ["VCM_EMOwner", grpNull]) isEqualTo _group) then {_unit setVariable ["VCM_VAULT", false];};
+                                    };
 								};
 							};
 							
@@ -156,5 +203,7 @@ waitUntil
 		} foreach (units _Group);
 	};
 	sleep 1;
-	{alive _x} count (units _Group) < 1
+	!(call _canRun)
 };
+
+_Group setVariable ["VCM_EMRunning", false];

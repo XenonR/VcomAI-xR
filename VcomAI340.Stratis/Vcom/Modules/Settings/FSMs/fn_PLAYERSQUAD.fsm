@@ -58,7 +58,7 @@ class FSM
                          "" \n
                          "private _RemoveUnits = [];" \n
                          "{" \n
-                         "	if (!alive _x || {isNull _x}) then" \n
+                         "	if (!alive _x || {isNull _x} || {!(_x in (units _Group))}) then" \n
                          "	{" \n
                          "		_RemoveUnits pushback _x;" \n
                          "	};" \n
@@ -84,51 +84,8 @@ class FSM
                                         to="Cooldown";
                                         precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
                                         condition=/*%FSM<CONDITION""">*/"(leader _group) isEqualTo player && {(local _group)} && {(count _AIUnits) < ((count (units _Group)) - 1)}"/*%FSM</CONDITION""">*/;
-                                        action=/*%FSM<ACTION""">*/"private _Side = (side _Group);" \n
-                                         "switch (_Side) do {" \n
-                                         "	case west: " \n
-                                         "	{" \n
-                                         "		{" \n
-                                         "			if !(isplayer _x) then" \n
-                                         "			{" \n
-                                         "				private _Unit = _x;" \n
-                                         "				_AIUnits pushbackunique _Unit;" \n
-                                         "				{" \n
-                                         "					_Unit setSkill _x;" \n
-                                         "				} forEach VCM_PSQUADW;" \n
-                                         "			};" \n
-                                         "		} forEach (units _Group);				" \n
-                                         "	};" \n
-                                         "	case east: " \n
-                                         "	{" \n
-                                         "		{" \n
-                                         "			if !(isplayer _x) then" \n
-                                         "			{" \n
-                                         "				private _Unit = _x;" \n
-                                         "				_AIUnits pushbackunique _Unit;" \n
-                                         "				{" \n
-                                         "					_Unit setSkill _x;" \n
-                                         "				} forEach VCM_PSQUADE;" \n
-                                         "			};" \n
-                                         "		} forEach (units _Group);							" \n
-                                         "	}; " \n
-                                         "	case resistance: " \n
-                                         "	{" \n
-                                         "		{" \n
-                                         "			if !(isplayer _x) then" \n
-                                         "			{" \n
-                                         "				private _Unit = _x;" \n
-                                         "				_AIUnits pushbackunique _Unit;" \n
-                                         "				{" \n
-                                         "					_Unit setSkill _x;" \n
-                                         "				} forEach VCM_PSQUADR;" \n
-                                         "			};" \n
-                                         "		} forEach (units _Group);						" \n
-                                         "	}; " \n
-                                         "};	" \n
-                                         "" \n
-                                         "//systemchat ""RAN!"";" \n
-                                         "_t = time;"/*%FSM</ACTION""">*/;
+                                        action=/*%FSM<ACTION""">*/"_AIUnits = [_Group] call VCM_fnc_ApplyPlayerSkills;" \n
+                         "_t = time;"/*%FSM</ACTION""">*/;
                                 };
                                 /*%FSM</LINK>*/
                                 /*%FSM<LINK "Wait">*/

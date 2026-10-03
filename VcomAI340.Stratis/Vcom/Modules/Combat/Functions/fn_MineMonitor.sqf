@@ -16,7 +16,7 @@
 private _RemoveLst = [];
 {
 	private _Mine = _x select 0;
-	if (alive _Mine) then
+	if (alive _Mine && {!(_Mine getVariable ["VCM_Detonating", false])}) then
 	{
 		private _Side = _x select 1;
 		private _EL = [];
@@ -32,6 +32,9 @@ private _RemoveLst = [];
 			
 			if (count _EL > 0) then 
 			{
+				// Claim this mine before the delayed blast so later frames cannot queue it again.
+				_Mine setVariable ["VCM_Detonating", true];
+				_RemoveLst pushBackUnique _x;
 				[_Mine, true] remoteExecCall ["enableSimulationGlobal",2];
 				_Mine spawn {sleep 0.25;_this setdamage 1;};		
 			};
@@ -51,5 +54,6 @@ private _RemoveLst = [];
 
 {
 	private _A = _x;
-	VCOM_MINEARRAY deleteAt (VCOM_MINEARRAY findIf {_A isEqualTo _x;});
+	private _index = VCOM_MINEARRAY findIf {_A isEqualTo _x;};
+	if (_index >= 0) then {VCOM_MINEARRAY deleteAt _index;};
 } foreach _RemoveLst;

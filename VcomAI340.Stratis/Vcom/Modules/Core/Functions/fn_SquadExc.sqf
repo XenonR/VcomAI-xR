@@ -1,17 +1,11 @@
-
 /*
-	Author: Genesis
-
-	Description:
-		This function will execute the appropriate code and FSM's onto a group.
-		These FSM's will run until the group is cleaned. They will be designed to halt when the group is empty or all units are dead.
-
-	Parameter(s):
-		0: GROUP
-
-	Returns:
-		NOTHING
+    Parameters: group (GROUP), or [group]. Returns: nil.
+    Call on the group owner. Register before spawning to prevent duplicate FSMs.
 */
-
-_this spawn VCM_fnc_SQUADBEH;
-VcmAI_ActiveList pushback _this;
+params ["_group"];
+if (isNull _group || {!local _group} || {!Vcm_ActivateAI} || {_group in VcmAI_ActiveList} ||
+    {_group getVariable ["Vcm_Disable", false]} || {!(side _group in VCM_SIDEENABLED)} ||
+    {isPlayer (leader _group)} || {!((leader _group) isKindOf "Man")} ||
+    {!(simulationEnabled (leader _group))} || {((units _group) findIf {alive _x}) < 0}) exitWith {};
+VcmAI_ActiveList pushBackUnique _group;
+_group spawn VCM_fnc_SQUADBEH;
