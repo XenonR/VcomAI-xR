@@ -21,12 +21,12 @@ class CfgRemoteExec
 
 
 class Extended_PreInit_EventHandlers {
-	VCM_CBASettings = call compile preprocessFileLineNumbers "Vcom\Functions\VCM_Functions\fn_CBASettings.sqf";
+	VCM_CBASettings = call compile preprocessFileLineNumbers "Vcom\Modules\Settings\Functions\fn_CBASettings.sqf";
 };
 
 
 
 class CfgFunctions 
 {
-	#include "vcom\cfgFunctions.hpp"
+	#include "Vcom\cfgFunctions.hpp"
 };
